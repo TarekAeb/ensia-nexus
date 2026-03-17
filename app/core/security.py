@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import bcrypt
 from jose import jwt, JWTError
 from fastapi import HTTPException
 
@@ -40,3 +41,35 @@ def decode_token(token: str):
 
     except JWTError:
         raise HTTPException(401, "Invalid or expired token")
+
+
+def hash_password(plain_password: str) -> bytes:
+    """
+    Hash a plain text password using bcrypt.
+    Returns the hashed password as bytes.
+    """
+    if not isinstance(plain_password, str) or not plain_password:
+        raise ValueError("Password must be a non-empty string.")
+
+    # Convert to bytes
+    password_bytes = plain_password.encode('utf-8')
+
+    # Generate salt and hash
+    salt = bcrypt.gensalt(rounds=12)
+    hashed = bcrypt.hashpw(password_bytes, salt)
+
+    return hashed
+
+
+def verify_password(plain_password: str, hashed_password: bytes) -> bool:
+    """
+    Verify a plain text password against a hashed password.
+    Returns True if match, False otherwise.
+    """
+    if not isinstance(plain_password, str) or not plain_password:
+        raise ValueError("Password must be a non-empty string.")
+    if not isinstance(hashed_password, bytes):
+        raise ValueError("Hashed password must be bytes.")
+
+    password_bytes = plain_password.encode('utf-8')
+    return bcrypt.checkpw(password_bytes, hashed_password)
