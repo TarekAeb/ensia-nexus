@@ -1,0 +1,106 @@
+# ------------------------------
+
+# Python
+
+# ------------------------------
+
+**pycache**/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.so
+
+# Virtual environments
+
+.venv/
+venv/
+env/
+
+# ------------------------------
+
+# Environment variables
+
+# ------------------------------
+
+.env
+.env.*
+!.env.example
+
+# ------------------------------
+
+# Database
+
+# ------------------------------
+
+*.db
+*.sqlite3
+
+# ------------------------------
+
+# Logs
+
+# ------------------------------
+
+*.log
+
+# ------------------------------
+
+# PyCharm / IDE
+
+# ------------------------------
+
+.idea/
+*.iml
+
+# VS Code (optional)
+
+.vscode/
+
+# ------------------------------
+
+# OS files
+
+# ------------------------------
+
+.DS_Store
+Thumbs.db
+
+# ------------------------------
+
+# Build / distributions
+
+# ------------------------------
+
+build/
+dist/
+*.egg-info/
+
+# ------------------------------
+
+# Testing / coverage
+
+# ------------------------------
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ------------------------------
+
+# Migrations (optional)
+
+# ------------------------------
+
+# Uncomment if you use Alembic and don't want to track versions
+
+# migrations/versions/
+
+# ------------------------------
+
+# Temporary files
+
+# ------------------------------
+
+*.swp
+*.tmp
