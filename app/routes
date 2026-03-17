@@ -1,0 +1,72 @@
+AUTH
+POST   /auth/signup                         register a new user account
+POST   /auth/login                          authenticate user and return JWT token
+GET    /auth/me                             get current authenticated user info
+
+
+USERS
+GET    /users/me                            retrieve current user profile
+PATCH  /users/me                            update current user profile
+GET    /users/{user_id}                     get user details by id
+GET    /users                               list all users (admin)
+DELETE /users/{user_id}                     delete a user (admin)
+
+
+LABS
+GET    /labs                                list all research labs
+GET    /labs/{lab_id}                       get lab details
+POST   /labs                                create new research lab
+PATCH  /labs/{lab_id}                       update lab information
+DELETE /labs/{lab_id}                       delete lab
+
+
+GROUPS
+GET    /groups                              list all research groups
+GET    /groups/{group_id}                   get group details
+POST   /labs/{lab_id}/groups                create group inside a lab
+PATCH  /groups/{group_id}                   update group info
+DELETE /groups/{group_id}                   delete group
+
+POST   /groups/{group_id}/members           add user to group
+DELETE /groups/{group_id}/members/{user_id}  remove user from group
+GET    /groups/{group_id}/members           list group members
+
+PATCH  /groups/{group_id}/validate          validate group (admin)
+
+
+PROJECTS
+GET    /projects                            list all projects
+GET    /projects/{project_id}               get project details
+POST   /groups/{group_id}/projects          create project in group
+PATCH  /projects/{project_id}               update project
+DELETE /projects/{project_id}               delete project
+
+GET    /projects/{project_id}/participants  list project participants
+POST   /projects/{project_id}/participants  add participant to project
+DELETE /projects/{project_id}/participants/{user_id}  remove participant
+
+
+APPLICATIONS
+POST   /projects/{project_id}/apply         apply to join a project (student)
+GET    /applications/me                     list current user's applications
+
+GET    /projects/{project_id}/applications  list applications for a project
+PATCH  /applications/{application_id}/accept  accept application
+PATCH  /applications/{application_id}/reject  reject application
+
+
+TASKS
+GET    /projects/{project_id}/tasks         list tasks in a project
+GET    /tasks/{task_id}                     get task details
+POST   /projects/{project_id}/tasks         create new task
+PATCH  /tasks/{task_id}                     update task (status, progress, etc.)
+DELETE /tasks/{task_id}                     delete task
+
+POST   /tasks/{task_id}/updates             add progress/update to task
+GET    /tasks/{task_id}/updates             list task updates
+
+
+RESOURCES
+GET    /projects/{project_id}/resources     list project resources
+POST   /projects/{project_id}/resources     add resource to project
+DELETE /resources/{resource_id}             delete resource
