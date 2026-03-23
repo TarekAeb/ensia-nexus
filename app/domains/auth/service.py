@@ -3,7 +3,7 @@ from http.client import HTTPException
 import app.core.auth as auth
 from app.core.security import verify_password, token_generator, hash_password
 from app.infrastructure.repositories.user_repository import UserRepository
-from app.domains.auth.schemas import UserSignup as SignSch, UserLogin as LoginSch
+from app.domains.auth.schemas import UserSignup as SignSch, UserLogin as LoginSch, UserPasswordChange as PassChangeSch
 
 whitelisted_email_domains = ["@ensia.edu.dz"]
 whitelist_active = True
@@ -64,3 +64,20 @@ class AuthService:
     @staticmethod
     def generate_token(user_id: int):
         return token_generator(user_id)
+
+    @staticmethod
+    def change_password(data: PassChangeSch, user):
+
+        # 1. Verify old password
+        if not verify_password(data.old_password, user.password_hash):
+            raise ValueError("Old password is incorrect")
+
+        # 2. Hash new password
+        new_password_hash = hash_password(data.new_password)
+
+        # 3. Update user password
+        UserRepository.update_user(user.id, {"password_hash": new_password_hash})
+
+        # 4. remove all existing tokens for the user (if we were storing them, which we're not in this simple implementation)
+
+        return user

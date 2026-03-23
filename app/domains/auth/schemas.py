@@ -21,3 +21,8 @@ class UserResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: dict
+
+
+class UserPasswordChange(BaseModel):
+    old_password: str
+    new_password: str
