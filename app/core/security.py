@@ -56,7 +56,7 @@ def decode_token(token: str):
 def hash_password(plain_password: str) -> str:
     """
     Hash a plain text password using bcrypt.
-    Returns the hashed password as bytes.
+    Returns the hashed password as a UTF-8 encoded string.
     """
     if not isinstance(plain_password, str) or not plain_password:
         raise ValueError("Password must be a non-empty string.")
