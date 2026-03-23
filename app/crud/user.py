@@ -20,8 +20,10 @@ async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[U
     return list(result.scalars().all())
 
 
-async def create_user(db: AsyncSession, schema: UserCreate) -> User:
+async def create_user(db: AsyncSession, schema: UserCreate, password: str | None = None) -> User:
     obj = User(**schema.model_dump())
+    if password:
+        obj.password = password
     db.add(obj)
     await db.flush()
     await db.refresh(obj)
@@ -46,3 +48,10 @@ async def delete_user(db: AsyncSession, user_id: int) -> bool:
     await db.delete(obj)
     await db.flush()
     return True
+
+
+async def update_user_password(db: AsyncSession, user: User, password_hash: str) -> User:
+    user.password = password_hash
+    await db.flush()
+    await db.refresh(user)
+    return user

@@ -7,6 +7,12 @@ from app.database import Base
 
 class Student(Base):
     __tablename__ = "students"
+    __table_args__ = (
+        CheckConstraint(
+            "level IN ('PHD','UNDERGRADUATE','GRADUATE')",
+            name="students_level_check",
+        ),
+    )
 
     user_id: Mapped[int] = mapped_column(
         BigInteger,

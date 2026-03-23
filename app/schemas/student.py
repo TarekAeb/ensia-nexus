@@ -1,12 +1,9 @@
 from datetime import datetime
-from typing import Optional
-
-from pydantic import BaseModel, ConfigDict
-
+from typing import Literal, Optional
 
 class StudentBase(BaseModel):
     university: Optional[str] = None
-    level: Optional[str] = None
+    level: Optional[Literal["PHD", "UNDERGRADUATE", "GRADUATE"]] = None
     major: Optional[str] = None
 
 

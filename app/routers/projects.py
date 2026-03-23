@@ -8,9 +8,17 @@ from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
 router = APIRouter(prefix="/projects", tags=["projects"])
 
 
+from app.core.auth import get_current_user
+
+
 @router.get("/", response_model=list[ProjectResponse])
-async def list_projects(skip: int = 0, limit: int = 100, db: AsyncSession = Depends(get_db)):
-    return await crud.get_projects(db, skip=skip, limit=limit)
+async def list_projects(
+    skip: int = 0, 
+    limit: int = 100, 
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
+):
+    return await crud.get_projects(db, user=current_user, skip=skip, limit=limit)
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)

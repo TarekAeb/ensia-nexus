@@ -5,8 +5,21 @@ from app.models.project_application import ProjectApplication
 from app.schemas.project_application import ProjectApplicationCreate, ProjectApplicationUpdate
 
 
+from sqlalchemy.orm import selectinload
+from app.models.project import Project
+
+
 async def get_project_application(db: AsyncSession, app_id: int) -> ProjectApplication | None:
     result = await db.execute(select(ProjectApplication).where(ProjectApplication.id == app_id))
+    return result.scalar_one_or_none()
+
+
+async def get_project_application_for_review(db: AsyncSession, app_id: int) -> ProjectApplication | None:
+    result = await db.execute(
+        select(ProjectApplication)
+        .where(ProjectApplication.id == app_id)
+        .options(selectinload(ProjectApplication.project).selectinload(Project.group))
+    )
     return result.scalar_one_or_none()
 
 

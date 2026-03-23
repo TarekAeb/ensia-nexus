@@ -28,12 +28,10 @@ async def signup(user_data: UserSignup, response: Response, db: AsyncSession = D
         crud.UserCreate(
             email=user_data.email,
             full_name=user_data.full_name,
-            role="STUDENT" # default role
-        )
+            role="STUDENT"
+        ),
+        password=password_hash
     )
-    user.password = password_hash
-    await db.flush()
-    await db.refresh(user)
 
     # 4. Generate tokens
     access_token, refresh_token = generate_tokens(user.id)
@@ -84,8 +82,6 @@ async def change_password(
     new_password_hash = hash_password(data.new_password)
 
     # 3. Update user
-    current_user.password = new_password_hash
-    await db.flush()
-    await db.refresh(current_user)
+    await crud.update_user_password(db, current_user, new_password_hash)
 
     return current_user

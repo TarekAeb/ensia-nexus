@@ -30,13 +30,39 @@ async def create_application(schema: ProjectApplicationCreate, db: AsyncSession 
     return await crud.create_project_application(db, schema)
 
 
+from sqlalchemy.orm import selectinload
+from app.core.auth import get_current_user
+from app.models.project import Project
+from app.models.research_group import ResearchGroup
+
+
 @router.put("/{app_id}", response_model=ProjectApplicationResponse)
 async def update_application(
-    app_id: int, schema: ProjectApplicationUpdate, db: AsyncSession = Depends(get_db)
+    app_id: int, 
+    schema: ProjectApplicationUpdate, 
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(get_current_user)
 ):
-    obj = await crud.update_project_application(db, app_id, schema)
-    if obj is None:
+    # Fetch application with project and group info
+    application = await crud.get_project_application_for_review(db, app_id)
+    
+    if application is None:
         raise HTTPException(status_code=404, detail="Project application not found")
+        
+    # Authorization check: only project leader, group leader, or creator
+    project = application.project
+    group_leader_id = project.group.leader_user_id
+    project_creator_id = project.created_by
+    
+    is_authorized = current_user.id in [group_leader_id, project_creator_id] or current_user.role == "ADMIN"
+    
+    if not is_authorized:
+        raise HTTPException(
+            status_code=403, 
+            detail="Only project leader or group record leader can review applications"
+        )
+
+    obj = await crud.update_project_application(db, app_id, schema)
     return obj
 
 

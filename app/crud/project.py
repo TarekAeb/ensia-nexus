@@ -10,8 +10,32 @@ async def get_project(db: AsyncSession, project_id: int) -> Project | None:
     return result.scalar_one_or_none()
 
 
-async def get_projects(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[Project]:
-    result = await db.execute(select(Project).offset(skip).limit(limit))
+from app.models.user import User
+from app.models.group_member import GroupMember
+from sqlalchemy import or_
+
+
+async def get_projects(db: AsyncSession, user: User, skip: int = 0, limit: int = 100) -> list[Project]:
+    # Students can see PUBLIC projects OR PRIVATE projects if they are members of the group
+    # Admins/Teachers might have different rules, but for now let's follow the provided rule:
+    # "Visibility: Projects can be designated as Public (visible to all students) or Private (restricted to specific group members)."
+    
+    if user.role == "ADMIN":
+        query = select(Project)
+    else:
+        # Get groups where user is a member
+        member_groups_query = select(GroupMember.group_id).where(GroupMember.user_id == user.id, GroupMember.is_active == True)
+        member_groups_result = await db.execute(member_groups_query)
+        member_group_ids = [r[0] for r in member_groups_result.all()]
+        
+        query = select(Project).where(
+            or_(
+                Project.visibility == "PUBLIC",
+                Project.group_id.in_(member_group_ids)
+            )
+        )
+    
+    result = await db.execute(query.offset(skip).limit(limit))
     return list(result.scalars().all())
 
 

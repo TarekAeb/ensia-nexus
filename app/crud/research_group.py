@@ -15,7 +15,15 @@ async def get_research_groups(db: AsyncSession, skip: int = 0, limit: int = 100)
     return list(result.scalars().all())
 
 
+from app.models.teacher import Teacher
+
+
 async def create_research_group(db: AsyncSession, schema: ResearchGroupCreate) -> ResearchGroup:
+    if schema.leader_user_id:
+        teacher = await db.get(Teacher, schema.leader_user_id)
+        if not teacher or teacher.grade not in ["MCA", "PROFESSOR"]:
+            raise ValueError("Group leader must have rank MCA or Professor")
+            
     obj = ResearchGroup(**schema.model_dump())
     db.add(obj)
     await db.flush()
@@ -27,6 +35,12 @@ async def update_research_group(db: AsyncSession, group_id: int, schema: Researc
     obj = await get_research_group(db, group_id)
     if obj is None:
         return None
+    
+    if schema.leader_user_id:
+        teacher = await db.get(Teacher, schema.leader_user_id)
+        if not teacher or teacher.grade not in ["MCA", "PROFESSOR"]:
+            raise ValueError("Group leader must have rank MCA or Professor")
+
     for field, value in schema.model_dump(exclude_none=True).items():
         setattr(obj, field, value)
     await db.flush()
