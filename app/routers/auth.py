@@ -12,6 +12,10 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
+@router.get("/me", response_model=UserResponse)
+async def get_me(current_user = Depends(get_current_user)):
+    return current_user
+
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def signup(user_data: UserSignup, response: Response, db: AsyncSession = Depends(get_db)):
     # 1. Check if user already exists
