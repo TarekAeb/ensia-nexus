@@ -6,11 +6,13 @@ class UserSignup(BaseModel):
 
 
 class UserLogin(BaseModel):
-    pass
+    email: str
+    password: str
 
 
 class Token(BaseModel):
-    pass
+    access_token: str
+    token_type: str = "bearer"
 
 
 class UserResponse(BaseModel):

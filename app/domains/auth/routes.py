@@ -15,7 +15,7 @@ def signup(user_data: UserSignup):
 
 @router.post("/login", response_model=Token)
 def login(credentials: UserLogin):
-    return log_in()
+    return log_in(UserLogin)
 
 
 @router.get("/me", response_model=UserResponse)
