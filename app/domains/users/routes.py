@@ -26,7 +26,7 @@ def get_my_profile(
         "phone_number": current_user.phone_number,
         "address": current_user.address,
         "website": current_user.website,
-        "email_verified": current_user.email_verified,
+        "email_verified": bool(current_user.email_verified),
         "created_at": current_user.created_at
     }
 
