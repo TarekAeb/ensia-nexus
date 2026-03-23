@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 
-from app.core.auth import get_current_user
+from app.core.auth import get_current_user, get_refresh_token
 from app.domains.auth.schemas import UserSignup, UserLogin, Token, UserResponse, UserPasswordChange
-from app.domains.auth.controller import sign_up, log_in, change_password as change_password_controller
+from app.domains.auth.controller import (sign_up, log_in, change_password as change_password_controller,
+                                         refresh_token_controller)
 
 router = APIRouter(
     prefix="/auth",
@@ -27,9 +28,14 @@ def logout():
     return
 
 
-@router.post("/refresh", response_model=UserResponse)
-def refresh_token():
-    return
+@router.patch("/refresh", response_model=UserResponse)
+def refresh_token(
+        response: Response,
+        rToken=Depends(get_refresh_token),
+):
+    return refresh_token_controller(
+        rToken, response
+    )
 
 
 @router.patch("/password", response_model=UserResponse)

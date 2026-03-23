@@ -104,3 +104,18 @@ def change_password(data: PassChangeSch, current_user):
         }
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+def refresh_token_controller(refreshtoken: str, response: Response):
+    try:
+        # 1. Get user info from refresh token
+        user_info = AuthService.get_user_info_from_refresh_token(refreshtoken)
+
+        # 2. Generate new tokens
+        tokens = AuthService.generate_token(user_info.id)
+
+        # 3. Build response with new cookies
+        return build_auth_response(response, user_info, tokens[0], tokens[1])
+
+    except ValueError as e:
+        raise HTTPException(status_code=401, detail=str(e))

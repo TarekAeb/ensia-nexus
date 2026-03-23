@@ -81,3 +81,24 @@ class AuthService:
         # 4. remove all existing tokens for the user (if we were storing them, which we're not in this simple implementation)
 
         return user
+
+    @staticmethod
+    def get_user_info_from_refresh_token( refresh_token):
+        # 1. Decode refresh token
+        try:
+            payload = auth.decode_token(refresh_token)
+        except ValueError as e:
+            raise ValueError(str(e))
+
+        # 2. Validate token type
+        if payload.get("type") != "refresh":
+            raise ValueError("Invalid token type")
+
+        # 3. Get user
+        user_id = int(payload.get("sub"))
+        user = UserRepository.get_user_by_id(user_id)
+
+        if not user:
+            raise ValueError("User not found")
+
+        return user
