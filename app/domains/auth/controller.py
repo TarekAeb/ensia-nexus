@@ -1,50 +1,76 @@
 from fastapi import HTTPException
+from fastapi import Response
+
+from app.archive.config import settings
 from app.domains.auth.service import AuthService
 from app.domains.auth.schemas import (UserSignup as SignSch,
                                       UserLogin as LoginSch,
                                       UserPasswordChange as PassChangeSch)
 
+COOKIE_CONFIG = {
+    "httponly": True,
+    "secure": settings.env == "production",
+    "samesite": "Strict"
+}
 
-def sign_up(data: SignSch):
+
+def build_auth_response(response: Response, user, access_token: str, refresh_token: str):
+    """
+    Sets auth cookies and returns user response.
+    """
+
+    # Access token cookie
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        max_age=60 * 15,  # 15 minutes
+        **COOKIE_CONFIG
+    )
+
+    # Refresh token cookie
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        max_age=60 * 60 * 24 * 7,  # 7 days
+        **COOKIE_CONFIG
+    )
+
+    # Response body (no tokens)
+    return {
+        "user": {
+            "id": user.id,
+            "email": user.email,
+            "full_name": user.full_name
+        }
+    }
+
+
+def sign_up(data: SignSch, response: Response):
     try:
 
         # 1. Create user
         user = AuthService.signup(data)
 
-        # 2. Generate token
-        token = AuthService.generate_token(user.id)
+        # 2. Generate tokens
+        tokens = AuthService.generate_token(user.id)
 
-        # 3. Return response 201
-        return {
-            "access_token": token,
-            "token_type": "bearer",
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "full_name": user.full_name
-            }
-        }
+        # 3. Build response with cookies
+        return build_auth_response(response, user, tokens[0], tokens[1])
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
-def log_in(data: LoginSch):
+def log_in(data: LoginSch, response: Response):
     try:
 
         user = AuthService.login(data)
 
-        token = AuthService.generate_token(user.id)
+        # 2. Generate tokens
+        tokens = AuthService.generate_token(user.id)
 
-        return {
-            "access_token": token,
-            "token_type": "bearer",
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "full_name": user.full_name
-            }
-        }
+        # 3. Build response with cookies
+        return build_auth_response(response, user, tokens[0], tokens[1])
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

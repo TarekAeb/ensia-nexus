@@ -1,7 +1,7 @@
 from http.client import HTTPException
 
 import app.core.auth as auth
-from app.core.security import verify_password, token_generator, hash_password
+from app.core.security import verify_password, generate_tokens, hash_password
 from app.infrastructure.repositories.user_repository import UserRepository
 from app.domains.auth.schemas import UserSignup as SignSch, UserLogin as LoginSch, UserPasswordChange as PassChangeSch
 
@@ -63,7 +63,7 @@ class AuthService:
 
     @staticmethod
     def generate_token(user_id: int):
-        return token_generator(user_id)
+        return generate_tokens(user_id)
 
     @staticmethod
     def change_password(data: PassChangeSch, user):

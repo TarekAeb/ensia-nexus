@@ -10,17 +10,32 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 
-def token_generator(user_id: int):
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+def _create_token(user_id: int, expires_delta: timedelta, token_type: str):
+    expire = datetime.utcnow() + expires_delta
 
     payload = {
         "sub": str(user_id),
-        "exp": expire
+        "exp": expire,
+        "type": token_type
     }
 
-    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
-    return token
+
+def generate_tokens(user_id: int, REFRESH_TOKEN_EXPIRE_DAYS=60 * 60 * 24 * 7):
+    access_token = _create_token(
+        user_id,
+        timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        "access"
+    )
+
+    refresh_token = _create_token(
+        user_id,
+        timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+        "refresh"
+    )
+
+    return access_token, refresh_token
 
 
 def decode_token(token: str):
@@ -32,12 +47,7 @@ def decode_token(token: str):
             algorithms=[ALGORITHM]
         )
 
-        user_id = payload.get("sub")
-
-        if user_id is None:
-            raise HTTPException(401, "Invalid token")
-
-        return int(user_id)
+        return payload
 
     except JWTError:
         raise HTTPException(401, "Invalid or expired token")

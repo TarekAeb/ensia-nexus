@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Response
 
 from app.core.auth import get_current_user
 from app.domains.auth.schemas import UserSignup, UserLogin, Token, UserResponse, UserPasswordChange
@@ -13,13 +13,13 @@ router = APIRouter(
 @router.post("/signup",
              response_model=UserResponse,
              status_code=status.HTTP_201_CREATED)
-def signup(user_data: UserSignup):
-    return sign_up(user_data)
+def signup(user_data: UserSignup, response: Response):
+    return sign_up(user_data, response)
 
 
-@router.post("/login", response_model=Token)
-def login(credentials: UserLogin):
-    return log_in(credentials)
+@router.post("/login", response_model=UserResponse)
+def login(credentials: UserLogin, response: Response):
+    return log_in(credentials, response)
 
 
 @router.delete("/logout", status_code=status.HTTP_204_NO_CONTENT)
@@ -27,7 +27,7 @@ def logout():
     return
 
 
-@router.post("/refresh", response_model=Token)
+@router.post("/refresh", response_model=UserResponse)
 def refresh_token():
     return
 

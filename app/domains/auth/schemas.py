@@ -18,8 +18,6 @@ class Token(BaseModel):
 
 
 class UserResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
     user: dict
 
 
