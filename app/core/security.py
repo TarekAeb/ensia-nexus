@@ -43,7 +43,7 @@ def decode_token(token: str):
         raise HTTPException(401, "Invalid or expired token")
 
 
-def hash_password(plain_password: str) -> bytes:
+def hash_password(plain_password: str) -> str:
     """
     Hash a plain text password using bcrypt.
     Returns the hashed password as bytes.
@@ -58,16 +58,19 @@ def hash_password(plain_password: str) -> bytes:
     salt = bcrypt.gensalt(rounds=12)
     hashed = bcrypt.hashpw(password_bytes, salt)
 
-    return hashed
+    return hashed.decode('utf-8')
 
 
-def verify_password(plain_password: str, hashed_password: bytes) -> bool:
+def verify_password(plain_password: str, hashed_password: bytes | str) -> bool:
     """
     Verify a plain text password against a hashed password.
     Returns True if match, False otherwise.
     """
+
     if not isinstance(plain_password, str) or not plain_password:
         raise ValueError("Password must be a non-empty string.")
+    if isinstance(hashed_password, str):
+        hashed_password = hashed_password.encode('utf-8')
     if not isinstance(hashed_password, bytes):
         raise ValueError("Hashed password must be bytes.")
 

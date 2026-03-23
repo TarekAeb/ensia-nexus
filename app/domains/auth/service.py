@@ -54,7 +54,8 @@ class AuthService:
             {
                 'email': data.email,
                 'full_name': data.full_name,
-                'password_hash': password_hash
+                'password_hash': password_hash,
+                'role': "STUDENT",  # force role to student for now, we can add an admin panel later to change roles
             }
         )
 

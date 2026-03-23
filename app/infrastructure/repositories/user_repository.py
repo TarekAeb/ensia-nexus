@@ -20,7 +20,7 @@ class UserRepository:
     @staticmethod
     def create_user(user_data):
         with SessionLocal() as db:
-            user = User(**user_data.dict())
+            user = User(**user_data)
             db.add(user)
             db.commit()
             db.refresh(user)
@@ -29,7 +29,7 @@ class UserRepository:
     @staticmethod
     def create_student_profile(student_data):
         with SessionLocal() as db:
-            student = Student(**student_data.dict())
+            student = Student(**student_data)
             db.add(student)
             db.commit()
             db.refresh(student)
@@ -38,7 +38,7 @@ class UserRepository:
     @staticmethod
     def create_teacher_profile(teacher_data):
         with SessionLocal() as db:
-            teacher = Teacher(**teacher_data.dict())
+            teacher = Teacher(**teacher_data)
             db.add(teacher)
             db.commit()
             db.refresh(teacher)
