@@ -10,6 +10,11 @@ async def get_user(db: AsyncSession, user_id: int) -> User | None:
     return result.scalar_one_or_none()
 
 
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
+    result = await db.execute(select(User).where(User.email == email))
+    return result.scalar_one_or_none()
+
+
 async def get_users(db: AsyncSession, skip: int = 0, limit: int = 100) -> list[User]:
     result = await db.execute(select(User).offset(skip).limit(limit))
     return list(result.scalars().all())

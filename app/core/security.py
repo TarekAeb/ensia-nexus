@@ -3,11 +3,7 @@ import bcrypt
 from jose import jwt, JWTError
 from fastapi import HTTPException
 
-# use environment variables
-SECRET_KEY = "super-secret-key"
-ALGORITHM = "HS256"
-
-ACCESS_TOKEN_EXPIRE_MINUTES = 60
+from app.config import settings
 
 
 def _create_token(user_id: int, expires_delta: timedelta, token_type: str):
@@ -19,19 +15,19 @@ def _create_token(user_id: int, expires_delta: timedelta, token_type: str):
         "type": token_type
     }
 
-    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
 
-def generate_tokens(user_id: int, REFRESH_TOKEN_EXPIRE_DAYS=60 * 60 * 24 * 7):
+def generate_tokens(user_id: int):
     access_token = _create_token(
         user_id,
-        timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
         "access"
     )
 
     refresh_token = _create_token(
         user_id,
-        timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+        timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS),
         "refresh"
     )
 

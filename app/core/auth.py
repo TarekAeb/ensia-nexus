@@ -1,11 +1,13 @@
-from fastapi import Request, HTTPException
+from fastapi import Request, HTTPException, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import decode_token
-from app.infrastructure.repositories.user_repository import UserRepository
+from app.crud import user as crud
+from app.database import get_db
 
 
-def get_current_user(request: Request):
+async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)):
     # 1. Try cookie first
-    token = request.cookies.get("access_token")
+    token = request.cookies.get(settings.ACCESS_TOKEN_COOKIE_NAME)
 
     # 2. Fallback to Authorization header
     if not token:
@@ -30,7 +32,7 @@ def get_current_user(request: Request):
 
     # 6. Get user
     user_id = int(payload.get("sub"))
-    user = UserRepository.get_user_by_id(user_id)
+    user = await crud.get_user(db, user_id)
 
     if not user:
         raise HTTPException(status_code=401, detail="User not found")

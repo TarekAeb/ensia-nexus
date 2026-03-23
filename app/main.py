@@ -14,20 +14,24 @@ from app.routers import (
     tasks,
     teachers,
     users,
+    auth,
 )
 
-app = FastAPI(title="Research Lab API", version="1.0.0")
+from app.config import settings
+
+app = FastAPI(title=settings.PROJECT_NAME, version=settings.VERSION)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-API_PREFIX = "/api/v1"
+API_PREFIX = settings.API_V1_STR
 
+app.include_router(auth.router, prefix=API_PREFIX)
 app.include_router(users.router, prefix=API_PREFIX)
 app.include_router(students.router, prefix=API_PREFIX)
 app.include_router(teachers.router, prefix=API_PREFIX)
