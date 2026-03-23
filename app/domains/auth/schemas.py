@@ -2,7 +2,9 @@ from pydantic import BaseModel
 
 
 class UserSignup(BaseModel):
-    pass
+    email: str
+    full_name: str
+    password: str
 
 
 class UserLogin(BaseModel):
@@ -16,4 +18,6 @@ class Token(BaseModel):
 
 
 class UserResponse(BaseModel):
-    pass
+    access_token: str
+    token_type: str = "bearer"
+    user: dict

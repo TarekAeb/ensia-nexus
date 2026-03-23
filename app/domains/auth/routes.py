@@ -8,14 +8,16 @@ router = APIRouter(
 )
 
 
-@router.post("/signup", response_model=UserResponse)
+@router.post("/signup",
+             response_model=UserResponse,
+             status_code=status.HTTP_201_CREATED)
 def signup(user_data: UserSignup):
-    return sign_up()
+    return sign_up(user_data)
 
 
 @router.post("/login", response_model=Token)
 def login(credentials: UserLogin):
-    return log_in(UserLogin)
+    return log_in(credentials)
 
 
 @router.get("/me", response_model=UserResponse)
