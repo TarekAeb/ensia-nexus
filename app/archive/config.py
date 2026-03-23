@@ -1,12 +1,22 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost:5432/fastapi_research_lab"
-    SECRET_KEY: str = "your-secret-key-here"
+    model_config = SettingsConfigDict(env_file=".env")
 
-    class Config:
-        env_file = ".env"
+    env: str = "development"
+
+    db_username: str
+    db_password: str
+    db_host: str
+    db_port: int
+    db_name: str
+
+    secret_key: str
+    algorithm: str
+
+    access_token_expire_minutes: int
+    refresh_token_expire_minutes: int
 
 
 settings = Settings()

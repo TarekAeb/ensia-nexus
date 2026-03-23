@@ -20,7 +20,7 @@ class UserRepository:
     @staticmethod
     def create_user(user_data):
         with SessionLocal() as db:
-            user = User(**user_data.dict())
+            user = User(**user_data)
             db.add(user)
             db.commit()
             db.refresh(user)
@@ -29,7 +29,7 @@ class UserRepository:
     @staticmethod
     def create_student_profile(student_data):
         with SessionLocal() as db:
-            student = Student(**student_data.dict())
+            student = Student(**student_data)
             db.add(student)
             db.commit()
             db.refresh(student)
@@ -38,22 +38,32 @@ class UserRepository:
     @staticmethod
     def create_teacher_profile(teacher_data):
         with SessionLocal() as db:
-            teacher = Teacher(**teacher_data.dict())
+            teacher = Teacher(**teacher_data)
             db.add(teacher)
             db.commit()
             db.refresh(teacher)
             return teacher
 
     @staticmethod
-    def update_user(user_id: int, data):
+    def update_user(user_id: int, data: dict):
         with SessionLocal() as db:
-            user = db.query(User).filter(User.id == user_id).first()
-            if user:
-                for key, value in data.dict(exclude_unset=True).items():
+            try:
+                user = db.query(User).filter(User.id == user_id).first()
+
+                if not user:
+                    return None
+
+                for key, value in data.items():
                     setattr(user, key, value)
+
                 db.commit()
                 db.refresh(user)
-            return user
+
+                return user
+
+            except Exception:
+                db.rollback()
+                raise
 
     @staticmethod
     def delete_user(user_id: int):
@@ -69,4 +79,3 @@ class UserRepository:
     def list_users():
         with SessionLocal() as db:
             return db.query(User).order_by(User.created_at.desc()).all()
-

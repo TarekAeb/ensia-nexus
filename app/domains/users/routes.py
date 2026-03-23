@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from typing import List
+
+from app.core.auth import get_current_user
 from app.domains.users.schemas import UserResponse, UserUpdate
 from app.domains.users import controller as user_controller
 
@@ -10,9 +12,23 @@ router = APIRouter(
 
 
 @router.get("/me", response_model=UserResponse)
-def get_my_profile():
-    return user_controller.get_my_profile()
-
+def get_my_profile(
+    current_user=Depends(get_current_user)
+):
+    return {
+        "id": current_user.id,
+        "full_name": current_user.full_name,
+        "email": current_user.email,
+        "role": current_user.role,
+        "institution": current_user.institution,
+        "department": current_user.department,
+        "contact_email": current_user.contact_email,
+        "phone_number": current_user.phone_number,
+        "address": current_user.address,
+        "website": current_user.website,
+        "email_verified": bool(current_user.email_verified),
+        "created_at": current_user.created_at
+    }
 
 @router.patch("/me", response_model=UserResponse)
 def update_my_profile(profile_data: UserUpdate):

@@ -1,6 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from app.domains.auth.schemas import UserSignup, UserLogin, Token, UserResponse
-from app.domains.auth.controller import sign_up, log_in, get_current_user_info
+from fastapi import APIRouter, Depends, HTTPException, status, Response
+
+from app.core.auth import get_current_user, get_refresh_token
+from app.domains.auth.schemas import UserSignup, UserLogin, Token, UserResponse, UserPasswordChange
+from app.domains.auth.controller import (sign_up, log_in, change_password as change_password_controller,
+                                         refresh_token_controller)
 
 router = APIRouter(
     prefix="/auth",
@@ -8,16 +11,38 @@ router = APIRouter(
 )
 
 
-@router.post("/signup", response_model=UserResponse)
-def signup(user_data: UserSignup):
-    return sign_up()
+@router.post("/signup",
+             response_model=UserResponse,
+             status_code=status.HTTP_201_CREATED)
+def signup(user_data: UserSignup, response: Response):
+    return sign_up(user_data, response)
 
 
-@router.post("/login", response_model=Token)
-def login(credentials: UserLogin):
-    return log_in()
+@router.post("/login", response_model=UserResponse)
+def login(credentials: UserLogin, response: Response):
+    return log_in(credentials, response)
 
 
-@router.get("/me", response_model=UserResponse)
-def get_current_user():
-    return get_current_user_info()
+@router.delete("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(response: Response):
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return response
+
+
+@router.patch("/refresh", response_model=UserResponse)
+def refresh_token(
+        response: Response,
+        rToken=Depends(get_refresh_token),
+):
+    return refresh_token_controller(
+        rToken, response
+    )
+
+
+@router.patch("/password", response_model=UserResponse)
+def change_password(
+        data: UserPasswordChange,
+        current_user=Depends(get_current_user)
+):
+    return change_password_controller(data, current_user)

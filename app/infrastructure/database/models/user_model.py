@@ -16,7 +16,8 @@ class User(Base):
     phone_number = Column(Text)
     address = Column(Text)
     website = Column(Text)
-    password_hash = Column(Text, nullable=False)
+    password_hash = Column(Text)  # if null -> user is created via GOOGLE and cannot login with password
+    email_verified = Column(Integer, default=0, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
 
     __table_args__ = (
