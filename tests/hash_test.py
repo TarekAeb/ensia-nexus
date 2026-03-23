@@ -3,7 +3,6 @@ import pytest
 from app.core.security import hash_password, verify_password
 
 
-import pytest
 
 
 def test_hash_and_verify_password():
