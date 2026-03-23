@@ -153,3 +153,10 @@ pytest
 - **Rate Limiting**: Protect the API from abuse
 - **Caching**: Add Redis-based caching for frequently accessed data
 - **File Uploads**: Support for document and dataset file uploads
+
+
+# To generate a new migration after model changes:
+alembic revision --autogenerate -m "description of changes"
+
+# To apply the changes to the database:
+alembic upgrade head

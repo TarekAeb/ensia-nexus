@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.core.auth import get_current_user, get_refresh_token
 from app.core.security import verify_password, generate_tokens, hash_password
