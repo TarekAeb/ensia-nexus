@@ -24,8 +24,10 @@ def login(credentials: UserLogin, response: Response):
 
 
 @router.delete("/logout", status_code=status.HTTP_204_NO_CONTENT)
-def logout():
-    return
+def logout(response: Response):
+    response.delete_cookie("access_token")
+    response.delete_cookie("refresh_token")
+    return response
 
 
 @router.patch("/refresh", response_model=UserResponse)
