@@ -45,15 +45,25 @@ class UserRepository:
             return teacher
 
     @staticmethod
-    def update_user(user_id: int, data):
+    def update_user(user_id: int, data: dict):
         with SessionLocal() as db:
-            user = db.query(User).filter(User.id == user_id).first()
-            if user:
-                for key, value in data.dict(exclude_unset=True).items():
+            try:
+                user = db.query(User).filter(User.id == user_id).first()
+
+                if not user:
+                    return None
+
+                for key, value in data.items():
                     setattr(user, key, value)
+
                 db.commit()
                 db.refresh(user)
-            return user
+
+                return user
+
+            except Exception:
+                db.rollback()
+                raise
 
     @staticmethod
     def delete_user(user_id: int):
@@ -69,4 +79,3 @@ class UserRepository:
     def list_users():
         with SessionLocal() as db:
             return db.query(User).order_by(User.created_at.desc()).all()
-

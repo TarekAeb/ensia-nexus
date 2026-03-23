@@ -58,7 +58,7 @@ def change_password(data: PassChangeSch, current_user):
     try:
 
         # 1. Change password
-        AuthService.change_password(current_user, data)
+        AuthService.change_password(data, current_user)
 
         # 2. opionally disconnect all sessions (not implemented yet)
 
