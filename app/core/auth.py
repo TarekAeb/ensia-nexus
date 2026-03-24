@@ -65,7 +65,7 @@ def get_refresh_token(request: Request):
     return token
 
 
-def login_with_google(id_token_str: str):
+def login_with_google(db, id_token_str: str):
     try:
         # Verify token with Google
         id_info = id_token.verify_oauth2_token(
@@ -81,7 +81,7 @@ def login_with_google(id_token_str: str):
             return None
 
         # Check if user exists
-        user = crud.get_user_by_email(email)
+        user = crud.get_user_by_email(db, email)
 
         # Create user if not exists
         if not user:

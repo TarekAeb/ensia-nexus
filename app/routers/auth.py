@@ -100,10 +100,9 @@ async def change_password(
 # @router.post("/refresh", response_model=UserResponse) # WHY DID YOU DELETE THIS ???
 
 @router.post("/google", response_model=UserResponse)
-def login_with_google(data: GoogleLoginRequest, response: Response):
-
+def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSession = Depends(get_db)):
     # 1. Verify Google token and get user info
-    user = login_with_google(data.id_token)
+    user = login_with_google(db, data.id_token)
 
     # 2 Generate tokens
     access_token, refresh_token = generate_tokens(user.id)
