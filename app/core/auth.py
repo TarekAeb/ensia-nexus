@@ -1,9 +1,17 @@
 from fastapi import Request, HTTPException, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.security import decode_token
+
+from app.config import settings
+from app.core.security import decode_token, generate_tokens
 from app.crud import user as crud
+from app.schemas.user import UserCreate
 from app.database import get_db
 from app.config import settings
+
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"  # add to settings later
 
 
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)):
@@ -57,3 +65,39 @@ def get_refresh_token(request: Request):
         raise HTTPException(status_code=401, detail="Not authenticated")
 
     return token
+
+
+async def login_with_google(db: AsyncSession, id_token_str: str):
+    try:
+        # Verify token with Google
+        id_info = id_token.verify_oauth2_token(
+            id_token_str,
+            requests.Request(),
+            GOOGLE_CLIENT_ID
+        )
+
+        email = id_info.get("email")
+        full_name = id_info.get("name")
+
+        if not email:
+            return None
+
+        # Check if user exists
+        user = await crud.get_user_by_email(db, email)
+
+        # Create user if not exists
+        if not user:
+            user = await crud.create_user(
+                db,
+                UserCreate(
+                    email=email,
+                    full_name=full_name,
+                    role="STUDENT"
+                )
+            )
+
+        return user
+
+    except Exception as e:
+        print("Google OAuth Error:", e)
+        return None

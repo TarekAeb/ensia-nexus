@@ -3,10 +3,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.database import get_db
-from app.core.auth import get_current_user, get_refresh_token
+from app.core.auth import get_current_user, get_refresh_token, login_with_google
 from app.core.security import verify_password, generate_tokens, hash_password
 from app.crud import user as crud
-from app.schemas.auth import UserSignup, UserLogin, UserResponse, UserPasswordChange, UserGoogleLogin
+from app.schemas.auth import UserSignup, UserLogin, UserResponse, UserPasswordChange, GoogleLoginRequest
 from app.schemas.user import UserCreate
 
 router = APIRouter(
@@ -14,52 +14,12 @@ router = APIRouter(
     tags=["Authentication"]
 )
 
-@router.post("/google", response_model=UserResponse)
-async def google_auth(
-    data: UserGoogleLogin,
-    response: Response,
-    db: AsyncSession = Depends(get_db)
-):
-    """
-    Handle Google OAuth authentication (Mock implementation).
-    In a real scenario, this would verify the Google id_token.
-    """
-    # 1. Try to find user by provided data or use a default mock user
-    user = None
-    if data.user_id:
-        user = await crud.get_user(db, data.user_id)
-    elif data.email:
-        user = await crud.get_user_by_email(db, data.email)
-    
-    # 2. If user doesn't exist, create a mock Google user
-    if not user:
-        email = data.email or "google_test@ensia.edu.dz"
-        full_name = data.full_name or "Google Test User"
-        
-        # Check if email exists again (in case user_id was wrong)
-        user = await crud.get_user_by_email(db, email)
-        if not user:
-            user = await crud.create_user(
-                db,
-                UserCreate(
-                    email=email,
-                    full_name=full_name,
-                    role="STUDENT"
-                )
-            )
 
-    # 3. Generate tokens
-    access_token, refresh_token = generate_tokens(user.id)
-    
-    # 4. Set cookies
-    response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
-    response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=refresh_token, httponly=True)
-
-    return user
 
 @router.get("/me", response_model=UserResponse)
-async def get_me(current_user = Depends(get_current_user)):
+async def get_me(current_user=Depends(get_current_user)):
     return current_user
+
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def signup(user_data: UserSignup, response: Response, db: AsyncSession = Depends(get_db)):
@@ -73,7 +33,7 @@ async def signup(user_data: UserSignup, response: Response, db: AsyncSession = D
 
     # 3. Create user
     user = await crud.create_user(
-        db, 
+        db,
         crud.UserCreate(
             email=user_data.email,
             full_name=user_data.full_name,
@@ -84,12 +44,13 @@ async def signup(user_data: UserSignup, response: Response, db: AsyncSession = D
 
     # 4. Generate tokens
     access_token, refresh_token = generate_tokens(user.id)
-    
+
     # 5. Set cookies
     response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
     response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=refresh_token, httponly=True)
 
     return user
+
 
 @router.post("/login", response_model=UserResponse)
 async def login(credentials: UserLogin, response: Response, db: AsyncSession = Depends(get_db)):
@@ -104,12 +65,13 @@ async def login(credentials: UserLogin, response: Response, db: AsyncSession = D
 
     # 3. Generate tokens
     access_token, refresh_token = generate_tokens(user.id)
-    
+
     # 4. Set cookies
     response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
     response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=refresh_token, httponly=True)
 
     return user
+
 
 @router.delete("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(response: Response):
@@ -117,11 +79,12 @@ async def logout(response: Response):
     response.delete_cookie(settings.REFRESH_TOKEN_COOKIE_NAME)
     return response
 
+
 @router.patch("/password", response_model=UserResponse)
 async def change_password(
-    data: UserPasswordChange,
-    current_user = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+        data: UserPasswordChange,
+        current_user=Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
 ):
     # 1. Verify old password
     if not verify_password(data.old_password, current_user.password):
@@ -134,3 +97,23 @@ async def change_password(
     await crud.update_user_password(db, current_user, new_password_hash)
 
     return current_user
+
+
+# @router.post("/refresh", response_model=UserResponse) # WHY DID YOU DELETE THIS ???
+
+@router.post("/google", response_model=UserResponse)
+async def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSession = Depends(get_db)):
+    # 1. Verify Google token and get user info
+    user = await login_with_google(db, data.id_token)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
+
+    # 2 Generate tokens
+    access_token, refresh_token = generate_tokens(user.id)
+
+    # 3. Set cookies
+    response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
+    response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=refresh_token, httponly=True)
+
+    return user
