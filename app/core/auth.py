@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import decode_token
 from app.crud import user as crud
 from app.database import get_db
+from app.config import settings
 
 
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)):

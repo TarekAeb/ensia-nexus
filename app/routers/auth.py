@@ -6,12 +6,56 @@ from app.database import get_db
 from app.core.auth import get_current_user, get_refresh_token
 from app.core.security import verify_password, generate_tokens, hash_password
 from app.crud import user as crud
-from app.schemas.auth import UserSignup, UserLogin, UserResponse, UserPasswordChange
+from app.schemas.auth import UserSignup, UserLogin, UserResponse, UserPasswordChange, UserGoogleLogin
+from app.schemas.user import UserCreate
 
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
+
+@router.post("/google", response_model=UserResponse)
+async def google_auth(
+    data: UserGoogleLogin,
+    response: Response,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Handle Google OAuth authentication (Mock implementation).
+    In a real scenario, this would verify the Google id_token.
+    """
+    # 1. Try to find user by provided data or use a default mock user
+    user = None
+    if data.user_id:
+        user = await crud.get_user(db, data.user_id)
+    elif data.email:
+        user = await crud.get_user_by_email(db, data.email)
+    
+    # 2. If user doesn't exist, create a mock Google user
+    if not user:
+        email = data.email or "google_test@ensia.edu.dz"
+        full_name = data.full_name or "Google Test User"
+        
+        # Check if email exists again (in case user_id was wrong)
+        user = await crud.get_user_by_email(db, email)
+        if not user:
+            user = await crud.create_user(
+                db,
+                UserCreate(
+                    email=email,
+                    full_name=full_name,
+                    role="STUDENT"
+                )
+            )
+
+    # 3. Generate tokens
+    access_token, refresh_token = generate_tokens(user.id)
+    
+    # 4. Set cookies
+    response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
+    response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=refresh_token, httponly=True)
+
+    return user
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user = Depends(get_current_user)):
@@ -33,7 +77,7 @@ async def signup(user_data: UserSignup, response: Response, db: AsyncSession = D
         crud.UserCreate(
             email=user_data.email,
             full_name=user_data.full_name,
-            role="STUDENT"
+            role=user_data.role
         ),
         password=password_hash
     )
