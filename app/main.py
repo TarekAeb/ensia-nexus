@@ -15,6 +15,7 @@ from app.routers import (
     teachers,
     users,
     auth,
+    announcements,
 )
 
 from app.config import settings
@@ -44,6 +45,7 @@ app.include_router(project_applications.router, prefix=API_PREFIX)
 app.include_router(tasks.router, prefix=API_PREFIX)
 app.include_router(task_updates.router, prefix=API_PREFIX)
 app.include_router(project_resources.router, prefix=API_PREFIX)
+app.include_router(announcements.router, prefix=API_PREFIX)
 
 
 @app.get("/")

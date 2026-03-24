@@ -4,7 +4,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.core.security import decode_token, generate_tokens
 from app.crud import user as crud
+from app.schemas.user import UserCreate
 from app.database import get_db
+from app.config import settings
 
 from google.oauth2 import id_token
 from google.auth.transport import requests
@@ -65,7 +67,7 @@ def get_refresh_token(request: Request):
     return token
 
 
-def login_with_google(db, id_token_str: str):
+async def login_with_google(db: AsyncSession, id_token_str: str):
     try:
         # Verify token with Google
         id_info = id_token.verify_oauth2_token(
@@ -81,21 +83,20 @@ def login_with_google(db, id_token_str: str):
             return None
 
         # Check if user exists
-        user = crud.get_user_by_email(db, email)
+        user = await crud.get_user_by_email(db, email)
 
         # Create user if not exists
         if not user:
-            user = crud.create_user({
-                "email": email,
-                "full_name": full_name,
-                "role": "STUDENT",  # default role
-                "password_hash": None  # no password (OAuth user)
-            })
+            user = await crud.create_user(
+                db,
+                UserCreate(
+                    email=email,
+                    full_name=full_name,
+                    role="STUDENT"
+                )
+            )
 
-        # Generate JWT
-        tokens = generate_tokens(user.id)
-
-        return tokens
+        return user
 
     except Exception as e:
         print("Google OAuth Error:", e)

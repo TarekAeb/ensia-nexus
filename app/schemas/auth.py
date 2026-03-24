@@ -1,11 +1,13 @@
 from pydantic import BaseModel, EmailStr, Field
-from app.schemas.user import UserResponse
+from typing import Optional
+from app.schemas.user import UserResponse, UserRole
 
 
 class UserSignup(BaseModel):
     email: EmailStr
     full_name: str
     password: str
+    role: UserRole = "STUDENT"
 
 
 class UserLogin(BaseModel):

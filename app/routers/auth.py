@@ -7,11 +7,13 @@ from app.core.auth import get_current_user, get_refresh_token, login_with_google
 from app.core.security import verify_password, generate_tokens, hash_password
 from app.crud import user as crud
 from app.schemas.auth import UserSignup, UserLogin, UserResponse, UserPasswordChange, GoogleLoginRequest
+from app.schemas.user import UserCreate
 
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"]
 )
+
 
 
 @router.get("/me", response_model=UserResponse)
@@ -35,7 +37,7 @@ async def signup(user_data: UserSignup, response: Response, db: AsyncSession = D
         crud.UserCreate(
             email=user_data.email,
             full_name=user_data.full_name,
-            role="STUDENT"
+            role=user_data.role
         ),
         password=password_hash
     )
@@ -100,9 +102,12 @@ async def change_password(
 # @router.post("/refresh", response_model=UserResponse) # WHY DID YOU DELETE THIS ???
 
 @router.post("/google", response_model=UserResponse)
-def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSession = Depends(get_db)):
+async def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSession = Depends(get_db)):
     # 1. Verify Google token and get user info
-    user = login_with_google(db, data.id_token)
+    user = await login_with_google(db, data.id_token)
+
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid Google token")
 
     # 2 Generate tokens
     access_token, refresh_token = generate_tokens(user.id)
@@ -110,8 +115,5 @@ def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSession 
     # 3. Set cookies
     response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
     response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=refresh_token, httponly=True)
-
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid Google token")
 
     return user

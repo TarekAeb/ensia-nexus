@@ -9,7 +9,7 @@ class Teacher(Base):
     __tablename__ = "teachers"
     __table_args__ = (
         CheckConstraint(
-            "grade IN ('MCA','PROFESSOR','DOCTOR','ADMIN')",
+            "grade IN ('MCA','PROFESSOR','DOCTOR','RESEARCHER','ADMIN')",
             name="teachers_grade_check",
         ),
     )
