@@ -9,7 +9,7 @@ class User(Base):
     __tablename__ = "users"
     __table_args__ = (
         CheckConstraint(
-            "role IN ('STUDENT','MCA','PROFESSOR','DOCTOR','ADMIN','RESEARCHER')",
+            "role IN ('STUDENT','TEACHER','ADMIN', 'PARTNER')",
             name="users_role_check",
         ),
     )
@@ -66,3 +66,16 @@ class User(Base):
     created_resources: Mapped[list["ProjectResource"]] = relationship(
         "ProjectResource", back_populates="creator"
     )
+
+    @property
+    def is_teacher(self) -> bool:
+        return self.role == "TEACHER"
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == "ADMIN"
+
+    @property
+    def is_student(self) -> bool:
+        return self.role == "STUDENT"
+
