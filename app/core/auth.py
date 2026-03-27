@@ -11,7 +11,7 @@ from app.config import settings
 from google.oauth2 import id_token
 from google.auth.transport import requests
 
-GOOGLE_CLIENT_ID = "YOUR_GOOGLE_CLIENT_ID"  # add to settings later
+GOOGLE_CLIENT_ID = "710370484106-6nro5i97uob4m0nsh55ps33ofq1ls2dt.apps.googleusercontent.com"  # add to settings later
 
 
 async def get_current_user(request: Request, db: AsyncSession = Depends(get_db)):

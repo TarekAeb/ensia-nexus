@@ -18,7 +18,6 @@ depends_on = None
 
 def upgrade() -> None:
     op.add_column("users", sa.Column("password_version", sa.Integer(), nullable=False, server_default="0"))
-    op.alter_column("users", "password_version", server_default=None)
 
 
 def downgrade() -> None:
