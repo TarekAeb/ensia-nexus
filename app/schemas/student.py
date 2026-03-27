@@ -6,6 +6,11 @@ class StudentBase(BaseModel):
     university: Optional[str] = None
     level: Optional[Literal["PHD", "UNDERGRADUATE", "GRADUATE"]] = None
     major: Optional[str] = None
+    bio: Optional[str] = None
+    experience: Optional[str] = None
+    research_interests: Optional[str] = None
+    skills: Optional[str] = None
+    cv_url: Optional[str] = None
 
 
 class StudentCreate(StudentBase):
@@ -14,8 +19,13 @@ class StudentCreate(StudentBase):
 
 class StudentUpdate(BaseModel):
     university: Optional[str] = None
-    level: Optional[str] = None
+    level: Optional[Literal["PHD", "UNDERGRADUATE", "GRADUATE"]] = None
     major: Optional[str] = None
+    bio: Optional[str] = None
+    experience: Optional[str] = None
+    research_interests: Optional[str] = None
+    skills: Optional[str] = None
+    cv_url: Optional[str] = None
 
 
 class StudentResponse(StudentBase):
