@@ -171,7 +171,16 @@ async def reset_password_confirm(
     if (user.password_version or 0) != int(token_password_version):
         raise HTTPException(status_code=400, detail="Reset token is no longer valid")
 
-    new_password_hash = hash_password(data.new_password)
+    if not data.new_password or len(data.new_password) < 8:
+        raise HTTPException(
+            status_code=400,
+            detail="New password must be at least 8 characters long",
+        )
+
+    try:
+        new_password_hash = hash_password(data.new_password)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid password") from exc
     await crud.update_user_password(db, user, new_password_hash)
 
     access_token, refresh_token = generate_tokens(user.id)
