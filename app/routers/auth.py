@@ -90,6 +90,7 @@ async def login(credentials: UserLogin, response: Response, db: AsyncSession = D
 
 @router.delete("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(response: Response):
+    response = Response(status_code=status.HTTP_204_NO_CONTENT)
     response.delete_cookie(settings.ACCESS_TOKEN_COOKIE_NAME)
     response.delete_cookie(settings.REFRESH_TOKEN_COOKIE_NAME)
     return response
