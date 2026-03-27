@@ -1,10 +1,16 @@
 from datetime import datetime
 from typing import Literal, Optional
+
 from pydantic import BaseModel, ConfigDict
 
-class StudentBase(BaseModel):
+
+StudentLevel = Literal["PHD", "UNDERGRADUATE", "GRADUATE"]
+
+
+class StudentCVBase(BaseModel):
+    title: str
     university: Optional[str] = None
-    level: Optional[Literal["PHD", "UNDERGRADUATE", "GRADUATE"]] = None
+    level: Optional[StudentLevel] = None
     major: Optional[str] = None
     bio: Optional[str] = None
     experience: Optional[str] = None
@@ -13,13 +19,14 @@ class StudentBase(BaseModel):
     cv_url: Optional[str] = None
 
 
-class StudentCreate(StudentBase):
-    user_id: int
+class StudentCVCreate(StudentCVBase):
+    student_user_id: int
 
 
-class StudentUpdate(BaseModel):
+class StudentCVUpdate(BaseModel):
+    title: Optional[str] = None
     university: Optional[str] = None
-    level: Optional[Literal["PHD", "UNDERGRADUATE", "GRADUATE"]] = None
+    level: Optional[StudentLevel] = None
     major: Optional[str] = None
     bio: Optional[str] = None
     experience: Optional[str] = None
@@ -28,8 +35,9 @@ class StudentUpdate(BaseModel):
     cv_url: Optional[str] = None
 
 
-class StudentResponse(StudentBase):
+class StudentCVResponse(StudentCVBase):
     model_config = ConfigDict(from_attributes=True)
 
-    user_id: int
+    id: int
+    student_user_id: int
     created_at: Optional[datetime] = None

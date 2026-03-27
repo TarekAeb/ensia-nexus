@@ -10,7 +10,10 @@ from app.models.project_application import ProjectApplication
 from app.models.task import Task
 from app.models.task_update import TaskUpdate
 from app.models.project_resource import ProjectResource
+from app.models.student_cv import StudentCV
+from app.models.student_previous_project import StudentPreviousProject
 from app.models.announcement import Announcement, AnnouncementComment, AnnouncementReaction
+from app.models.chat import ChatRoom, ChatMessage
 
 __all__ = [
     "User",
@@ -25,7 +28,11 @@ __all__ = [
     "Task",
     "TaskUpdate",
     "ProjectResource",
+    "StudentCV",
+    "StudentPreviousProject",
     "Announcement",
     "AnnouncementComment",
     "AnnouncementReaction",
+    "ChatRoom",
+    "ChatMessage",
 ]
