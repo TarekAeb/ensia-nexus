@@ -90,7 +90,7 @@ async def login(credentials: UserLogin, response: Response, db: AsyncSession = D
 
 @router.delete("/logout", status_code=status.HTTP_204_NO_CONTENT)
 async def logout(response: Response):
-    response = Response(status_code=status.HTTP_204_NO_CONTENT)
+    response.status_code = status.HTTP_204_NO_CONTENT
     response.delete_cookie(settings.ACCESS_TOKEN_COOKIE_NAME)
     response.delete_cookie(settings.REFRESH_TOKEN_COOKIE_NAME)
     return response
@@ -135,7 +135,7 @@ async def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSe
     return user
 
 
-@router.post("/forget_password", status_code=status.HTTP_200_OK)
+@router.post("/forgot_password", status_code=status.HTTP_200_OK)
 async def forget_password(data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
     user = await crud.get_user_by_email(db, email=str(data.email))
 
@@ -171,7 +171,16 @@ async def reset_password_confirm(
     if (user.password_version or 0) != int(token_password_version):
         raise HTTPException(status_code=400, detail="Reset token is no longer valid")
 
-    new_password_hash = hash_password(data.new_password)
+    if not data.new_password or len(data.new_password) < 8:
+        raise HTTPException(
+            status_code=400,
+            detail="New password must be at least 8 characters long",
+        )
+
+    try:
+        new_password_hash = hash_password(data.new_password)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid password") from exc
     await crud.update_user_password(db, user, new_password_hash)
 
     access_token, refresh_token = generate_tokens(user.id)
