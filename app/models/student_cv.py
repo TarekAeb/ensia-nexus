@@ -5,20 +5,20 @@ from sqlalchemy.sql import func
 from app.database import Base
 
 
-class Student(Base):
-    __tablename__ = "students"
+class StudentCV(Base):
+    __tablename__ = "student_cvs"
     __table_args__ = (
         CheckConstraint(
             "level IN ('PHD','UNDERGRADUATE','GRADUATE')",
-            name="students_level_check",
+            name="student_cvs_level_check",
         ),
     )
 
-    user_id: Mapped[int] = mapped_column(
-        BigInteger,
-        ForeignKey("users.id", ondelete="CASCADE"),
-        primary_key=True,
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+    student_user_id: Mapped[int] = mapped_column(
+        BigInteger, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
+    title: Mapped[str] = mapped_column(Text, nullable=False)
     university: Mapped[str | None] = mapped_column(Text, nullable=True)
     level: Mapped[str | None] = mapped_column(Text, nullable=True)
     major: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -31,7 +31,4 @@ class Student(Base):
         DateTime(timezone=True), server_default=func.now()
     )
 
-    user: Mapped["User"] = relationship("User", back_populates="student")
-    applications: Mapped[list["ProjectApplication"]] = relationship(
-        "ProjectApplication", back_populates="student", cascade="all, delete-orphan"
-    )
+    student: Mapped["User"] = relationship("User", back_populates="student_cvs")

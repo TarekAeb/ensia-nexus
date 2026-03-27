@@ -30,10 +30,7 @@ async def create_application(schema: ProjectApplicationCreate, db: AsyncSession 
     return await crud.create_project_application(db, schema)
 
 
-from sqlalchemy.orm import selectinload
 from app.core.auth import get_current_user
-from app.models.project import Project
-from app.models.research_group import ResearchGroup
 
 
 @router.put("/{app_id}", response_model=ProjectApplicationResponse)
