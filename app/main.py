@@ -18,6 +18,7 @@ from app.routers import (
     announcements,
     student_cvs,
     student_previous_projects,
+    chat,
 )
 
 from app.config import settings
@@ -50,6 +51,7 @@ app.include_router(project_resources.router, prefix=API_PREFIX)
 app.include_router(announcements.router, prefix=API_PREFIX)
 app.include_router(student_cvs.router, prefix=API_PREFIX)
 app.include_router(student_previous_projects.router, prefix=API_PREFIX)
+app.include_router(chat.router, prefix=API_PREFIX)
 
 
 @app.get("/")

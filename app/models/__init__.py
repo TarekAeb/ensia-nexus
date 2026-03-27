@@ -13,6 +13,7 @@ from app.models.project_resource import ProjectResource
 from app.models.student_cv import StudentCV
 from app.models.student_previous_project import StudentPreviousProject
 from app.models.announcement import Announcement, AnnouncementComment, AnnouncementReaction
+from app.models.chat import ChatRoom, ChatMessage
 
 __all__ = [
     "User",
@@ -32,4 +33,6 @@ __all__ = [
     "Announcement",
     "AnnouncementComment",
     "AnnouncementReaction",
+    "ChatRoom",
+    "ChatMessage",
 ]
