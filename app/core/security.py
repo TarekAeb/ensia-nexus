@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import bcrypt
 from jose import jwt, JWTError
 from fastapi import HTTPException
@@ -6,14 +6,16 @@ from fastapi import HTTPException
 from app.config import settings
 
 
-def _create_token(user_id: int, expires_delta: timedelta, token_type: str):
-    expire = datetime.utcnow() + expires_delta
+def _create_token(user_id: int, expires_delta: timedelta, token_type: str, password_version: int | None = None):
+    expire = datetime.now(timezone.utc) + expires_delta
 
     payload = {
         "sub": str(user_id),
         "exp": expire,
         "type": token_type
     }
+    if password_version is not None:
+        payload["pv"] = password_version
 
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
 
@@ -32,6 +34,15 @@ def generate_tokens(user_id: int):
     )
 
     return access_token, refresh_token
+
+
+def generate_reset_token(user_id: int, password_version: int) -> str:
+    return _create_token(
+        user_id,
+        timedelta(minutes=settings.RESET_TOKEN_EXPIRE_MINUTES),
+        "reset",
+        password_version=password_version,
+    )
 
 
 def decode_token(token: str):

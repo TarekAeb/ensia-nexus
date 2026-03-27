@@ -15,7 +15,7 @@ async def list_announcements(skip: int = 0, limit: int = 100, db: AsyncSession =
 
 @router.post("/", response_model=AnnouncementResponse, status_code=201)
 async def create_announcement(schema: AnnouncementCreate, db: AsyncSession = Depends(get_db), current_user = Depends(get_current_user)):
-    if current_user.role not in ["ADMIN", "TEACHER", "PROFESSOR", "DOCTOR", "MCA", "RESEARCHER"]:
+    if current_user.role not in ["ADMIN", "TEACHER"]:
         raise HTTPException(status_code=403, detail="Only teachers and admins can post announcements")
     return await crud.create_announcement(db, schema)
 
