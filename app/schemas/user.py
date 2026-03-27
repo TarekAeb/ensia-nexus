@@ -3,7 +3,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-UserRole = Literal["STUDENT", "PROFESSOR", "ADMIN", "PARTNER"]
+UserRole = Literal["STUDENT", "TEACHER", "ADMIN", "PARTNER"]
 
 class UserBase(BaseModel):
     full_name: str
