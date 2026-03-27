@@ -66,6 +66,9 @@ class User(Base):
     created_resources: Mapped[list["ProjectResource"]] = relationship(
         "ProjectResource", back_populates="creator"
     )
+    student_cvs: Mapped[list["StudentCV"]] = relationship(
+        "StudentCV", back_populates="student", cascade="all, delete-orphan"
+    )
 
     @property
     def is_teacher(self) -> bool:
