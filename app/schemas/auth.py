@@ -27,3 +27,13 @@ class UserPasswordChange(BaseModel):
 
 class GoogleLoginRequest(BaseModel):
     id_token: str = Field(..., description="Google ID token obtained from frontend")
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordConfirmRequest(BaseModel):
+    token: str
+    new_password: str
+

@@ -4,9 +4,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.core.auth import get_current_user, get_refresh_token, login_with_google
-from app.core.security import verify_password, generate_tokens, hash_password
+from app.core.security import (
+    verify_password,
+    generate_tokens,
+    hash_password,
+    generate_reset_token,
+    decode_token,
+)
+from app.core.email import send_password_reset_email
 from app.crud import user as crud
-from app.schemas.auth import UserSignup, UserLogin, UserResponse, UserPasswordChange, GoogleLoginRequest
+from app.schemas.auth import (
+    UserSignup,
+    UserLogin,
+    UserResponse,
+    UserPasswordChange,
+    GoogleLoginRequest,
+    ForgotPasswordRequest,
+    ResetPasswordConfirmRequest,
+)
 from app.schemas.user import UserCreate
 
 router = APIRouter(
@@ -113,6 +128,52 @@ async def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSe
     access_token, refresh_token = generate_tokens(user.id)
 
     # 3. Set cookies
+    response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
+    response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=refresh_token, httponly=True)
+
+    return user
+
+
+@router.post("/forget_password", status_code=status.HTTP_200_OK)
+async def forget_password(data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
+    user = await crud.get_user_by_email(db, email=str(data.email))
+
+    # Always return success to avoid disclosing whether an email exists.
+    if user and user.password:
+        reset_token = generate_reset_token(user.id, user.password_version or 0)
+        reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}"
+        send_password_reset_email(user.email, reset_link)
+
+    return {"message": "If the email exists, a reset link has been sent."}
+
+
+@router.post("/reset_password_confirm", response_model=UserResponse)
+async def reset_password_confirm(
+    data: ResetPasswordConfirmRequest,
+    response: Response,
+    db: AsyncSession = Depends(get_db),
+):
+    payload = decode_token(data.token)
+
+    if payload.get("type") != "reset":
+        raise HTTPException(status_code=400, detail="Invalid token type")
+
+    user_id = payload.get("sub")
+    token_password_version = payload.get("pv")
+    if user_id is None or token_password_version is None:
+        raise HTTPException(status_code=400, detail="Invalid token payload")
+
+    user = await crud.get_user(db, int(user_id))
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid reset token")
+
+    if (user.password_version or 0) != int(token_password_version):
+        raise HTTPException(status_code=400, detail="Reset token is no longer valid")
+
+    new_password_hash = hash_password(data.new_password)
+    await crud.update_user_password(db, user, new_password_hash)
+
+    access_token, refresh_token = generate_tokens(user.id)
     response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
     response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=refresh_token, httponly=True)
 

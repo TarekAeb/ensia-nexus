@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, String, Text
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, String, Text, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -18,6 +18,7 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(Text, nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     password: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    password_version: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     institution: Mapped[str | None] = mapped_column(Text, nullable=True)
     department: Mapped[str | None] = mapped_column(Text, nullable=True)

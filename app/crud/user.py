@@ -52,6 +52,7 @@ async def delete_user(db: AsyncSession, user_id: int) -> bool:
 
 async def update_user_password(db: AsyncSession, user: User, password_hash: str) -> User:
     user.password = password_hash
+    user.password_version = (user.password_version or 0) + 1
     await db.flush()
     await db.refresh(user)
     return user
