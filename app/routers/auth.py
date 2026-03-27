@@ -135,7 +135,7 @@ async def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSe
     return user
 
 
-@router.post("/forget_password", status_code=status.HTTP_200_OK)
+@router.post("/forgot_password", status_code=status.HTTP_200_OK)
 async def forget_password(data: ForgotPasswordRequest, db: AsyncSession = Depends(get_db)):
     user = await crud.get_user_by_email(db, email=str(data.email))
 
