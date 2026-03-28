@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.database import get_db
 from app.core.auth import get_current_user, get_refresh_token, login_with_google
-from app.core.security import verify_password, generate_tokens, hash_password
+from app.core.security import verify_password, generate_tokens, hash_password, decode_token
 from app.crud import user as crud
 from app.schemas.auth import UserSignup, UserLogin, UserResponse, UserPasswordChange, GoogleLoginRequest
 from app.schemas.user import UserCreate
@@ -99,7 +99,32 @@ async def change_password(
     return current_user
 
 
-# @router.post("/refresh", response_model=UserResponse) # WHY DID YOU DELETE THIS ???
+@router.post("/refresh", response_model=UserResponse)
+async def refresh_token(
+    response: Response,
+    refresh_token: str = Depends(get_refresh_token),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        payload = decode_token(refresh_token)
+        if payload.get("type") != "refresh":
+            raise HTTPException(status_code=401, detail="Invalid token type")
+        
+        user_id = int(payload.get("sub"))
+        user = await crud.get_user(db, user_id)
+        if not user:
+            raise HTTPException(status_code=401, detail="User not found")
+            
+        access_token, new_refresh_token = generate_tokens(user.id)
+        
+        response.set_cookie(key=settings.ACCESS_TOKEN_COOKIE_NAME, value=access_token, httponly=True)
+        response.set_cookie(key=settings.REFRESH_TOKEN_COOKIE_NAME, value=new_refresh_token, httponly=True)
+        
+        return user
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=401, detail="Invalid refresh token")
 
 @router.post("/google", response_model=UserResponse)
 async def google_login(data: GoogleLoginRequest, response: Response, db: AsyncSession = Depends(get_db)):

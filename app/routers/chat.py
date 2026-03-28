@@ -10,6 +10,7 @@ from app.schemas import chat as schema_chat
 from app.core.security import decode_token
 from app.core.auth import get_current_user
 from app.models.user import User
+from app.config import settings
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
